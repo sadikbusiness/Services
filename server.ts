@@ -369,6 +369,12 @@ app.post("/api/public/request", (req: Request, res: Response) => {
 });
 
 // 8. Secure Admin Login Endpoint
+
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
+
 app.post("/api/auth/login", (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;

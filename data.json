@@ -245,6 +245,19 @@
       "created_at": "2026-06-14T05:11:56.327Z",
       "assigned_worker_id": "app_pickup_01",
       "assigned_worker_name": "Md. Selim Reza"
+    },
+    {
+      "id": "req_7362stzmh",
+      "customer_name": "sadik business",
+      "phone": "024575",
+      "email": "",
+      "address": "BORIL, Shantingor, PONUT, Kalai, Joypurhat",
+      "service_type": "Pickup Service",
+      "duration": "Monthly Commuting",
+      "budget": "jjm",
+      "notes": "REQUESTING SPECIFIC COMMUTE ROUTE DRIVER: Md. Selim Reza (ID: app_pickup_01). Vehicle details: Toyota HiAce Microbus (AC), Route Area: Uttara to Dhanmondi (via Airport Rd - Mohakhali). Extra client requirements: ",
+      "status": "new",
+      "created_at": "2026-06-17T08:56:50.072Z"
     }
   ],
   "notices": [
@@ -280,6 +293,20 @@
     }
   ],
   "activity_logs": [
+    {
+      "id": "log_od85wx3vb",
+      "user_id": "user_admin_01",
+      "user_name": "Super Administrator",
+      "action": "User logged in securely (super_admin) on trusted terminal/dev: Chrome / Safari / Microsoft Windows PC",
+      "created_at": "2026-06-17T08:56:53.075Z"
+    },
+    {
+      "id": "log_mzhee93i8",
+      "user_id": "public",
+      "user_name": "Visitor Form",
+      "action": "New service request placed by customer: sadik business for Pickup Service",
+      "created_at": "2026-06-17T08:56:50.072Z"
+    },
     {
       "id": "log_mt29wit6b",
       "user_id": "user_admin_01",
