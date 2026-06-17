@@ -10,7 +10,7 @@ import { User, UserRole, Applicant, ServiceRequest, Notice, ActivityLog, SystemS
 dns.setDefaultResultOrder?.("ipv4first");
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || "NS_MANPOWER_SECRET_KEY_JWT_2026";
 
 // SMTP Email dispatcher helper
