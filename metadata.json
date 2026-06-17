@@ -1,0 +1,6 @@
+{
+  "name": "Manpower Service & Recruitment Portal",
+  "description": "A comprehensive marketplace and management platform connecting customers with domestic helpers, security guards, and pickup service providers with a powerful admin dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,536 @@
+import fs from "fs";
+import path from "path";
+import bcrypt from "bcryptjs";
+import { User, Applicant, ServiceRequest, Notice, ActivityLog, SystemSettings } from "./src/types";
+
+const DB_FILE = path.join(process.cwd(), "data.json");
+
+interface DatabaseSchema {
+  users: User[];
+  passwords: Record<string, string>; // user_id -> bcrypt hash
+  applicants: Applicant[];
+  service_requests: ServiceRequest[];
+  notices: Notice[];
+  activity_logs: ActivityLog[];
+  settings: SystemSettings;
+}
+
+// Default Seed Data
+const getInitialData = (): DatabaseSchema => {
+  const adminId1 = "user_admin_01";
+  const editorId1 = "user_editor_01";
+  
+  const salt = bcrypt.genSaltSync(10);
+  const adminHash = bcrypt.hashSync("admin123", salt);
+  const editorHash = bcrypt.hashSync("editor123", salt);
+
+  return {
+    users: [
+      {
+        id: adminId1,
+        name: "Super Administrator",
+        email: "admin@manpower.com",
+        role: "super_admin",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: editorId1,
+        name: "Mst. Salma Begum",
+        email: "editor@manpower.com",
+        role: "editor",
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+    ],
+    passwords: {
+      [adminId1]: adminHash,
+      [editorId1]: editorHash
+    },
+    applicants: [
+      {
+        id: "app_helper_01",
+        full_name: "Rahima Khatun",
+        father_name: "Abdul Majid",
+        mother_name: "Saleha Begum",
+        dob: "1994-08-12",
+        age: 32,
+        nid: "19945672910384729",
+        phone: "01712345678",
+        email: "rahima.helper@gmail.com",
+        address: "House 24, Road 5, Mirpur-10, Dhaka",
+        category: "helper",
+        experience: "5 Years",
+        skills: "Cooking, Child Care, Senior Elder Care, Deep Cleaning",
+        photo: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Police Verification Certificate, Local Chairman Certificate",
+        status: "approved",
+        helper_type: "Housemaid",
+        location: "Mirpur / Dhanmondi, Dhaka",
+        description: "Rahima is an exceptionally skilled domestic helper with 5 years of verified experience in Dhaka. She is fluent in Bangla and excels at traditional Bengali cooking, household management, and caring for young children."
+      },
+      {
+        id: "app_helper_02",
+        full_name: "Fatema Akter Jasmine",
+        father_name: "Late Nurul Islam",
+        mother_name: "Anwara Begum",
+        dob: "1998-03-24",
+        age: 28,
+        nid: "19984639201938573",
+        phone: "01823456789",
+        email: "fatema.jasmine@gmail.com",
+        address: "Ward 4, Uttara Sector 4, Dhaka-1230",
+        category: "helper",
+        experience: "3 Years",
+        skills: "Infant Care, Babysitting, Basic English Speaking, First Aid",
+        photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Nursing Assistant Certificate",
+        status: "approved",
+        helper_type: "Babysitter",
+        location: "Uttara / Gulshan / Banani, Dhaka",
+        description: "Fatema is a certified nursery assistant and professional babysitter. She specialises in infant care, feeding schedules, milestone tracking, and speaking basic English with bilingual children."
+      },
+      {
+        id: "app_helper_03",
+        full_name: "Rina Barua",
+        father_name: "Bimal Barua",
+        mother_name: "Purnima Barua",
+        dob: "1988-11-20",
+        age: 38,
+        nid: "19885829103958190",
+        phone: "01934567890",
+        email: "rina.care@gmail.com",
+        address: "Mogbazar railgate, Ramna, Dhaka",
+        category: "helper",
+        experience: "8 Years",
+        skills: "Elderly Care, Diabetic Insulin administration, Speech Therapy support, Palliative care assistance",
+        photo: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Red Crescent Elderly Care Workshop Attendant Certificate",
+        status: "approved",
+        helper_type: "Caregiver",
+        location: "Mohakhali / Mogbazar / Badda, Dhaka",
+        description: "Rina holds extensive certification in elderly care and life support assistance. She is warm, patient, and highly expert in monitoring blood pressure, managing diabetic routines, and assisting semi-mobility elders."
+      },
+      {
+        id: "app_helper_04",
+        full_name: "Mst. Kohinoor Begum",
+        father_name: "Ali Akbar",
+        mother_name: "Zohra Khatun",
+        dob: "1995-05-05",
+        age: 31,
+        nid: "19952819385739201",
+        phone: "01512345678",
+        email: "kohinoor95@gmail.com",
+        address: "Kallyanpur, Dhaka",
+        category: "helper",
+        experience: "2 Years",
+        skills: "Deep Kitchen Cleaning, Laundry, Ironing, Dishwashing",
+        photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card",
+        status: "pending",
+        helper_type: "Cleaner",
+        location: "Dhaka",
+        description: "Kohinoor has worked as a residential cleaner in housing societies. She is looking for domestic helper service placements in central Dhaka."
+      },
+      {
+        id: "app_guard_01",
+        full_name: "Md. Aminul Islam",
+        father_name: "Md. Rafiqul Islam",
+        mother_name: "Mst. Shirin Akhter",
+        dob: "1989-10-15",
+        age: 37,
+        nid: "19891029384758392",
+        phone: "01723456789",
+        email: "aminul.guard@gmail.com",
+        address: "Block B, Section 12, Mirpur, Dhaka",
+        category: "security",
+        experience: "7 Years",
+        skills: "Armed Guard Duty, CCTV Operations, Access Management, Fire Safety, First Aid, Crisis Response",
+        photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Army Retirement Certificate, Gun License Copy, Fitness Certificate",
+        status: "approved",
+        security_type: "Residential Security",
+        location: "Gulshan / Banani / Baridhara, Dhaka",
+        description: "Aminul is a disciplined former Bangladesh Army soldier who has 7 years of subsequent corporate civilian security experience. He is trained in advanced fire response, self-defense, and high-tech gate scanning logistics."
+      },
+      {
+        id: "app_guard_02",
+        full_name: "Md. Jahangir Alam",
+        father_name: "Late Abdul Latif",
+        mother_name: "Amena Khatun",
+        dob: "1992-02-18",
+        age: 34,
+        nid: "19922938573910293",
+        phone: "01834567890",
+        email: "jahangir.alam@gmail.com",
+        address: "Vatara, Kuril, Dhaka-1212",
+        category: "security",
+        experience: "4 Years",
+        skills: "Commercial Complex Patrol, Emergency Management, Parking Administration, Threat Detection",
+        photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Professional Guard Academy Completion Certificate",
+        status: "approved",
+        security_type: "Commercial Security",
+        location: "Kawarran Bazar / Motijheel / Paltan, Dhaka",
+        description: "Jahangir is physical, fully fitness-certified, and highly attentive. He excels in managing crowded commercial setups, operating metal detector scanners, and running vehicle log books."
+      },
+      {
+        id: "app_pickup_01",
+        full_name: "Md. Selim Reza",
+        father_name: "Ataur Rahman",
+        mother_name: "Rehana Begum",
+        dob: "1987-01-05",
+        age: 39,
+        nid: "19872910385739180",
+        phone: "01945678901",
+        email: "selim.driver@gmail.com",
+        address: "Rampura, Dhaka",
+        category: "pickup",
+        experience: "10 Years",
+        skills: "Heavy & Light Vehicle Driving License, Route mapping, School Transit safe-guards, Defensive driving",
+        photo: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, BRTA Valid Driving License, Police clearance registration",
+        status: "approved",
+        vehicle_type: "Toyota HiAce Microbus (AC)",
+        vehicle_photo: "https://images.unsplash.com/photo-1551816259-4528e3b94a3f?auto=format&fit=crop&q=80&w=600",
+        route: "Uttara to Dhanmondi (via Airport Rd - Mohakhali)",
+        capacity: 12,
+        schedule: "7:00 AM - 4:00 PM (Sunday to Thursday)",
+        area: "Dhaka (Northern & Central)",
+        description: "Selim is an outstanding defensive driver with 10 years of accident-free experience. He owns and operates a safe, fully air-conditioned Toyota HiAce Microbus, specializing in premium corporate and secure daily school run pickup services."
+      },
+      {
+        id: "app_pickup_02",
+        full_name: "Md. Harun-or-Rashid",
+        father_name: "Sadequr Rahman",
+        mother_name: "Asia Khatun",
+        dob: "1991-07-20",
+        age: 35,
+        nid: "19915729103948572",
+        phone: "01756789012",
+        email: "harun.express@gmail.com",
+        address: "Khilgaon, Dhaka",
+        category: "pickup",
+        experience: "6 Years",
+        skills: "Sedan Premium driving, Airport transfer schedules, Real-time navigation apps, Executive protocols",
+        photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400",
+        documents: "NID Card, Professional Light Vehicle Driving License",
+        status: "approved",
+        vehicle_type: "Toyota Corolla Sedan (AC)",
+        vehicle_photo: "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&q=80&w=600",
+        route: "Khilgaon to Motijheel / Gulshan-1",
+        capacity: 4,
+        schedule: "8:00 AM - 6:00 PM (Daily)",
+        area: "Dhaka (Eastern & Central)",
+        description: "Harun provides customized private office commutes and urgent premium transfers in his meticulously maintained 4-seater Toyota Corolla."
+      }
+    ],
+    service_requests: [
+      {
+        id: "req_01",
+        customer_name: "Kazi Ashraful Islam",
+        phone: "01799887766",
+        email: "kazi.ashraf@gmail.com",
+        address: "House 12, Road B, Gulshan-2, Dhaka",
+        service_type: "Domestic Helper",
+        duration: "1 Year Contract",
+        budget: "BDT 15,000 / Month",
+        notes: "We urgently require a full-time live-in caregiver for our grandfather. English baseline or basic medical chart readings capability is secondary but preferred.",
+        status: "new",
+        created_at: new Date(Date.now() - 4 * 3600000).toISOString()
+      },
+      {
+        id: "req_02",
+        customer_name: "Sajib Ahmed Chowdhury",
+        phone: "01855442211",
+        email: "sajib_chowdhury@techbd.com",
+        address: "Tejgaon Commercial Area, Tejgaon, Dhaka",
+        service_type: "Security Guard",
+        duration: "6 Months Renewing",
+        budget: "BDT 22,000 / Guard",
+        notes: "Require 2 armed security guards with army or national defense force backgrounds for corporate office coverage block.",
+        status: "in_progress",
+        created_at: new Date(Date.now() - 24 * 3600000).toISOString(),
+        assigned_worker_id: "app_guard_01",
+        assigned_worker_name: "Md. Aminul Islam"
+      },
+      {
+        id: "req_03",
+        customer_name: "Dr. Tanzina Khanam",
+        phone: "01911223344",
+        email: "tanzina.care@dhk-med.org",
+        address: "Sector 11, Uttara, Dhaka",
+        service_type: "Pickup Service",
+        duration: "School Semester Basis",
+        budget: "BDT 8,000 / Month per Child",
+        notes: "Looking for school shuttle microbus pickup and drop service for my children, from Uttara Sector 11 to Scholastica Uttara.",
+        status: "completed",
+        created_at: new Date(Date.now() - 72 * 3600000).toISOString(),
+        assigned_worker_id: "app_pickup_01",
+        assigned_worker_name: "Md. Selim Reza"
+      }
+    ],
+    notices: [
+      {
+        id: "notice_01",
+        title: "Important Notice: Helper Background Check Policy Upgraded",
+        content: "To guarantee premium safety, all registered and aspiring Domestic Helpers will now go through mandatory, automated Police Verification clearance checks alongside sub-divisional ward biometric records, with immediate effect from June 1st. Application updates are free.",
+        priority: "high",
+        status: "published",
+        is_pinned: true,
+        published_date: "2026-06-01T10:00:00.000Y",
+        created_at: "2026-06-01T10:00:00.000Y"
+      },
+      {
+        id: "notice_02",
+        title: "Security Guard Training Seminar rescheduled",
+        content: "The monthly special tactical fire-safety and threat-neutralisation workshop in tie-up with national volunteers has been rescheduled to Friday, June 20, 2026 at the Main Office complex. All on-bench guards are requested to attend.",
+        priority: "normal",
+        status: "published",
+        is_pinned: false,
+        published_date: "2026-06-12T09:00:00.000Y",
+        created_at: "2026-06-12T08:30:00.000Y"
+      },
+      {
+        id: "notice_03",
+        title: "Bangla & English Language Helpdesk Live!",
+        content: "We have updated our manpower platform to support fully integrated Bangla translation switchers and local helpline contact parameters. Candidates and employers can choose their desired dialect seamlessly.",
+        priority: "low",
+        status: "published",
+        is_pinned: false,
+        published_date: "2026-06-15T15:00:00.000Y",
+        created_at: "2026-06-15T14:45:00.000Y"
+      }
+    ],
+    activity_logs: [
+      {
+        id: "log_01",
+        user_id: "user_admin_01",
+        user_name: "Super Administrator",
+        action: "Initialized Database Seed System & Pre-approved 5 Candidates",
+        created_at: new Date(Date.now() - 100 * 3600000).toISOString()
+      },
+      {
+        id: "log_02",
+        user_id: "user_admin_01",
+        user_name: "Super Administrator",
+        action: "Assigned Md. Aminul Islam to Service Request req_02",
+        created_at: new Date(Date.now() - 23 * 3600000).toISOString()
+      },
+      {
+        id: "log_03",
+        user_id: "user_editor_01",
+        user_name: "Mst. Salma Begum",
+        action: "Published Notice: Bangla & English Language Helpdesk Live!",
+        created_at: new Date(Date.now() - 12 * 3600000).toISOString()
+      }
+    ],
+    settings: {
+      company_name: "Nirapotta & Seba Manpower Provider Ltd.",
+      logo: "NS Manpower",
+      contact_number: "+8801700001122",
+      whatsapp_number: "+8801700001122",
+      email: "info@exprogroupbd.com",
+      office_address: "Expro complex, House 42/A, Road 11, Banani, Dhaka-1213, Bangladesh",
+      social_facebook: "https://facebook.com/nsmanpowerbd",
+      social_twitter: "https://twitter.com/nsmanpowerbd",
+      social_linkedin: "https://linkedin.com/company/nsmanpowerbd",
+      seo_title: "Trustworthy Manpower & Service Provider in Bangladesh - Helpers, Security, Pickup",
+      seo_description: "Hire highly experienced, police-verified Domestic Helpers, professional Armed Security Guards, and premium School & Office Pickup services in Dhaka.",
+      footer_text: "© 2026 Nirapotta & Seba Manpower Ltd. All rights reserved. Managed under secure Ministry of Labour licenses."
+    }
+  };
+};
+
+class DBManager {
+  private data: DatabaseSchema;
+
+  constructor() {
+    this.data = this.load();
+  }
+
+  private load(): DatabaseSchema {
+    try {
+      if (fs.existsSync(DB_FILE)) {
+        const raw = fs.readFileSync(DB_FILE, "utf-8");
+        return JSON.parse(raw);
+      }
+    } catch (e) {
+      console.error("Error loading db file, running fallback initialization", e);
+    }
+    const rawData = getInitialData();
+    this.saveData(rawData);
+    return rawData;
+  }
+
+  private saveData(dataToSave: DatabaseSchema) {
+    try {
+      fs.writeFileSync(DB_FILE, JSON.stringify(dataToSave, null, 2), "utf-8");
+    } catch (err) {
+      console.error("Error writing data.json file", err);
+    }
+  }
+
+  public save() {
+    this.saveData(this.data);
+  }
+
+  // Users & Password logic
+  public getUsers() {
+    return this.data.users;
+  }
+
+  public getUserById(id: string) {
+    return this.data.users.find(u => u.id === id);
+  }
+
+  public getUserByEmail(email: string) {
+    return this.data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  }
+
+  public verifyPassword(userId: string, plainText: string): boolean {
+    const hash = this.data.passwords[userId];
+    if (!hash) return false;
+    return bcrypt.compareSync(plainText, hash);
+  }
+
+  public addUser(user: User, plainTextPass: string) {
+    this.data.users.push(user);
+    const salt = bcrypt.genSaltSync(10);
+    this.data.passwords[user.id] = bcrypt.hashSync(plainTextPass, salt);
+    this.save();
+  }
+
+  public deleteUser(id: string) {
+    this.data.users = this.data.users.filter(u => u.id !== id);
+    delete this.data.passwords[id];
+    this.save();
+  }
+
+  // Applicants logic
+  public getApplicants() {
+    return this.data.applicants;
+  }
+
+  public getApplicantById(id: string) {
+    return this.data.applicants.find(a => a.id === id);
+  }
+
+  public addApplicant(applicant: Applicant) {
+    this.data.applicants.push(applicant);
+    this.save();
+    return applicant;
+  }
+
+  public updateApplicant(id: string, updates: Partial<Applicant>) {
+    const idx = this.data.applicants.findIndex(a => a.id === id);
+    if (idx !== -1) {
+      const updatedApplicant = { ...this.data.applicants[idx], ...updates } as Applicant;
+      // Recalculate age if DOB is updated
+      if (updates.dob) {
+        const birthDate = new Date(updates.dob);
+        const difference = Date.now() - birthDate.getTime();
+        const ageDate = new Date(difference);
+        updatedApplicant.age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      }
+      this.data.applicants[idx] = updatedApplicant;
+      this.save();
+      return updatedApplicant;
+    }
+    return null;
+  }
+
+  public deleteApplicant(id: string) {
+    this.data.applicants = this.data.applicants.filter(a => a.id !== id);
+    this.save();
+  }
+
+  // Service Requests logic
+  public getServiceRequests() {
+    return this.data.service_requests;
+  }
+
+  public getServiceRequestById(id: string) {
+    return this.data.service_requests.find(r => r.id === id);
+  }
+
+  public addServiceRequest(req: ServiceRequest) {
+    this.data.service_requests.push(req);
+    this.save();
+    return req;
+  }
+
+  public updateServiceRequest(id: string, updates: Partial<ServiceRequest>) {
+    const idx = this.data.service_requests.findIndex(r => r.id === id);
+    if (idx !== -1) {
+      this.data.service_requests[idx] = { ...this.data.service_requests[idx], ...updates } as ServiceRequest;
+      this.save();
+      return this.data.service_requests[idx];
+    }
+    return null;
+  }
+
+  public deleteServiceRequest(id: string) {
+    this.data.service_requests = this.data.service_requests.filter(r => r.id !== id);
+    this.save();
+  }
+
+  // Notices logic
+  public getNotices() {
+    return this.data.notices;
+  }
+
+  public getNoticeById(id: string) {
+    return this.data.notices.find(n => n.id === id);
+  }
+
+  public addNotice(notice: Notice) {
+    this.data.notices.push(notice);
+    this.save();
+    return notice;
+  }
+
+  public updateNotice(id: string, updates: Partial<Notice>) {
+    const idx = this.data.notices.findIndex(n => n.id === id);
+    if (idx !== -1) {
+      this.data.notices[idx] = { ...this.data.notices[idx], ...updates } as Notice;
+      this.save();
+      return this.data.notices[idx];
+    }
+    return null;
+  }
+
+  public deleteNotice(id: string) {
+    this.data.notices = this.data.notices.filter(n => n.id !== id);
+    this.save();
+  }
+
+  // Activity Logs logic
+  public getActivityLogs() {
+    return this.data.activity_logs;
+  }
+
+  public addActivityLog(log: ActivityLog) {
+    this.data.activity_logs.unshift(log); // newest first
+    // Limit logs to last 300 entries to maintain high performance
+    if (this.data.activity_logs.length > 300) {
+      this.data.activity_logs = this.data.activity_logs.slice(0, 300);
+    }
+    this.save();
+    return log;
+  }
+
+  // Settings logic
+  public getSettings() {
+    return this.data.settings;
+  }
+
+  public updateSettings(updates: Partial<SystemSettings>) {
+    this.data.settings = { ...this.data.settings, ...updates };
+    this.save();
+    return this.data.settings;
+  }
+}
+
+export const db = new DBManager();
+export default db;
